@@ -1,12 +1,12 @@
 {
   "name": "eu4-save-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP server that lets Claude read your Europa Universalis IV save files and give strategic insights (Windows, macOS, Linux; ironman via rakaly).",
   "main": "dist/index.js",
   "scripts": {
     "build": "node scripts/build.mjs",
     "typecheck": "tsc",
-    "test": "node --import tsx --test test/parser.test.ts test/eu4.test.ts test/mcp.test.ts",
+    "test": "node --import tsx --test test/parser.test.ts test/eu4.test.ts test/mcp.test.ts test/real.test.ts",
     "pack": "npm run build && mcpb pack . eu4-save-mcp.mcpb"
   },
   "keywords": [

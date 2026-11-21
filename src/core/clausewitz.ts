@@ -286,6 +286,12 @@ class Parser {
         const v = this.parseBlock(true);
         this.path.pop();
         (items ??= []).push(v);
+        // EU5 uses blocks as keys: `{ ... }=yes` — consume and drop the value
+        this.skipWsAndComments();
+        if (b[this.pos] === EQ && b[this.pos + 1] !== EQ) {
+          this.pos++;
+          this.skipValue();
+        }
         continue;
       }
       const [tok, quoted] = this.readToken();

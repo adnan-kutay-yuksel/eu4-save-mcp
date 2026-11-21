@@ -41,3 +41,9 @@ test("searchTree finds keys and values", () => {
   assert.equal(searchTree(o, /treasury/).length, 2);
   assert.equal(searchTree(o, /albion/i, { values: true }).length, 1);
 });
+
+test("blocks used as keys ({...}=yes) don't leak into arrays", () => {
+  const o = parseClausewitz(`names={ { name="A" }=yes { name="B" }=yes } after=1`);
+  assert.deepEqual(o.names, [{ name: "A" }, { name: "B" }]);
+  assert.equal(o.after, 1);
+});

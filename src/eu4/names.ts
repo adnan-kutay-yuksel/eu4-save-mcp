@@ -80,6 +80,20 @@ export function provinceName(id: string, saveName?: string): string {
   return saveName ?? loc()!.provinces.get(id) ?? `Province ${id}`;
 }
 
+/** Names the keyword heuristic gets wrong (used only when game files are not installed). */
+const OVERRIDES: Record<string, string> = {
+  ottoman_spahi: "cavalry", prussian_uhlan: "cavalry", mughal_mansabdar: "cavalry", mongol_swarm: "cavalry",
+  mongol_bow: "cavalry", slavic_stradioti: "cavalry", stratioitai: "cavalry", east_mongolian_steppe: "cavalry",
+  steppe_footmen: "infantry", steppe_infantry: "infantry", reformed_steppe_rifles: "infantry",
+  persian_shamshir: "infantry", steppe_mounted_raiders: "cavalry", pedrero: "artillery",
+  ottoman_musellem: "cavalry", ottoman_timariot: "cavalry", ottoman_reformed_spahi: "cavalry", ottoman_lancer: "cavalry",
+};
+
+export function unitCategoriesFromGameFiles(): boolean {
+  unitCategory("");
+  return (unitCache?.size ?? 0) > 0;
+}
+
 /** Unit type → category (infantry/cavalry/artillery/heavy_ship/...) from game files. */
 let unitCache: Map<string, string> | null = null;
 export function unitCategory(type: string): string {
@@ -103,6 +117,7 @@ export function unitCategory(type: string): string {
   const known = unitCache.get(type);
   if (known) return known;
   const t = type.toLowerCase();
+  if (OVERRIDES[t]) return OVERRIDES[t];
   if (/artillery|cannon|bombard|culverin|howitzer|_gun|mortar|_battery/.test(t)) return "artillery";
   if (/cavalry|knight|horse|hussar|cuirassier|dragoon|lancer|mamluk|sipahi|cossack|horsem|rider|camel|elephant|keshik|raider|cataphract|gendarme|caracolle|chevauchee|galoop|reiter|carabinier|steppe|charge|mounted|cavalier|chariot/.test(t)) return "cavalry";
   if (/galleass|galley|chebeck|archipelago|xebec|war_galley|zambuk|djong|longship/.test(t)) return "galley";

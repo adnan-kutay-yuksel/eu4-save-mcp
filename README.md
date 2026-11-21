@@ -67,7 +67,17 @@ Requires Node.js 18+ (Claude Desktop ships its own runtime for `.mcpb` extension
 | Compressed (zip) | ✅ built in (deflate & zstd) |
 | Ironman / binary (`EU4bin`) | ✅ with the free [rakaly CLI](https://github.com/rakaly/cli/releases) |
 
-Paradox's binary token table is not public, so binary saves are decoded by **rakaly**, an open-source tool by the pdx.tools author. Download the build for your OS (`aarch64-apple-darwin` for Apple Silicon Macs, `x86_64-apple-darwin` for Intel Macs, `x86_64-pc-windows-msvc` for Windows), extract it, and either put it on your `PATH` or point `RAKALY_PATH` at it. The server also looks in `~/Downloads/rakaly-*` automatically. Run `eu4_environment` to check.
+Paradox's binary token table is not public, so binary saves are decoded by **rakaly**, an open-source tool by the pdx.tools author. Download the build for your OS (`aarch64-apple-darwin` for Apple Silicon Macs, `x86_64-apple-darwin` for Intel Macs, `x86_64-pc-windows-msvc` for Windows), extract it, and either put it on your `PATH` or point `RAKALY_PATH` at it. The server also looks in `~/Downloads/rakaly-*` automatically. Run `eu4_environment` to check. Tested with rakaly 0.8.25.
+
+Without the game installed, infantry/cavalry/artillery are estimated from unit names; when your EU4 install is found they come from the game files.
+
+## Tested with real saves
+
+Besides synthetic unit tests, every release is checked against 12 real community saves from the public [pdx.tools](https://pdx.tools) test corpus: patches 1.29 to 1.35, plaintext, compressed, ironman/binary, multiplayer, modded, no-DLC and Random New World games, from 1444 starts to 1817 late games with 970+ provinces. To run that yourself:
+
+```bash
+REAL_SAVES_DIR=/path/to/saves RAKALY_PATH=/path/to/rakaly npm test
+```
 
 ## Where saves are found
 

@@ -4,7 +4,7 @@
  * saves into plaintext. We never download or bundle it; we only use it if the
  * user installed it.
  */
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -43,17 +43,41 @@ export function findRakaly(): string | undefined {
   return undefined;
 }
 
-function run(bin: string, args: string[]): Promise<Buffer> {
+function run(bin: string, args: string[], input?: Buffer): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    execFile(bin, args, { encoding: "buffer", maxBuffer: 2 * 1024 * 1024 * 1024, timeout: 10 * 60 * 1000 }, (err, stdout, stderr) => {
+    const child = execFile(bin, args, { encoding: "buffer", maxBuffer: 2 * 1024 * 1024 * 1024, timeout: 10 * 60 * 1000 }, (err, stdout, stderr) => {
       // rakaly exits 1 when it encountered unknown tokens but still produced output
-      if (stdout && stdout.length > 100 && (!err || (err as NodeJS.ErrnoException & { code?: number }).code === 1)) {
+      if (stdout && stdout.length > 20 && (!err || (err as NodeJS.ErrnoException & { code?: number }).code === 1)) {
         resolve(stdout);
         return;
       }
       reject(new Error(`rakaly ${args.join(" ")} failed: ${(stderr?.toString() || err?.message || "").trim().slice(0, 500)}`));
     });
+    if (input) child.stdin?.end(input);
   });
+}
+
+/** Melt an in-memory binary fragment (e.g. the small `meta` zip entry) via stdin. */
+export async function meltBuffer(data: Buffer, format: string): Promise<Buffer | undefined> {
+  const bin = findRakaly();
+  if (!bin) return undefined;
+  try {
+    return await run(bin, ["melt", "--format", format, "--to-stdout", "--unknown-key", "stringify"], data);
+  } catch {
+    return undefined;
+  }
+}
+
+/** Synchronous variant for small fragments (fast listings). */
+export function meltBufferSync(data: Buffer, format: string): Buffer | undefined {
+  const bin = findRakaly();
+  if (!bin) return undefined;
+  try {
+    return execFileSync(bin, ["melt", "--format", format, "--to-stdout", "--unknown-key", "stringify"], { input: data, maxBuffer: 64 * 1024 * 1024, timeout: 30000, stdio: ["pipe", "pipe", "ignore"] });
+  } catch (e) {
+    const out = (e as { stdout?: Buffer }).stdout;
+    return out && out.length > 20 ? out : undefined;
+  }
 }
 
 /** Melt a binary save into plaintext using rakaly. Tries several argument sets. */

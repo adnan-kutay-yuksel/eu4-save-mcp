@@ -12,7 +12,7 @@ import { hasGameLocalisation } from "./eu4/names.js";
 import { eu4GameDirs, eu4InstalledVersion, eu4Language, eu4SaveDirs, eu4UserDirs } from "./eu4/paths.js";
 import { findSaves, loadSave, readSaveMeta, resolveSavePath, type LoadedSave } from "./eu4/save.js";
 
-export const VERSION = "1.0.0";
+export const VERSION = "1.1.0";
 
 type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
 

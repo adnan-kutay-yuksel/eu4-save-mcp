@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { all, isObject, num, one, parseClausewitz, str, yes, type PObject, type PValue } from "../core/clausewitz.js";
 import { listFiles, type FileInfo } from "../core/platform.js";
-import { meltWithRakaly } from "../core/rakaly.js";
+import { meltBufferSync, meltWithRakaly } from "../core/rakaly.js";
 import { looksLikeZip, ZipReader } from "../core/zip.js";
 import { eu4SaveDirs } from "./paths.js";
 
@@ -153,6 +153,14 @@ export function readSaveMeta(file: string): SaveMeta {
     if (enc === "text-zip" && z.has("meta")) {
       return extractMeta(parseClausewitz(stripMagic(z.read("meta")), { encoding: "latin1" }), enc);
     }
+    if (enc === "binary-zip" && z.has("meta")) {
+      const melted = meltBufferSync(z.read("meta"), "eu4");
+      if (melted) {
+        const m = extractMeta(parseClausewitz(stripMagic(melted), { encoding: "latin1" }), enc);
+        m.ironman = m.ironman || true;
+        return m;
+      }
+    }
     return { ...emptyMeta(enc), ironman: enc === "binary-zip" };
   }
   return { ...emptyMeta(enc), ironman: enc === "binary" };
@@ -189,7 +197,20 @@ export function lastLoadedPath(): string | undefined {
   return lastLoaded;
 }
 
-export async function loadSave(file: string, opts: { full?: boolean } = {}): Promise<LoadedSave> {
+const inflight = new Map<string, Promise<LoadedSave>>();
+
+/** Load (or reuse) a save. Concurrent calls for the same file share one parse. */
+export function loadSave(file: string, opts: { full?: boolean } = {}): Promise<LoadedSave> {
+  lastLoaded = file; // set immediately so parallel tool calls target the same save
+  const key = `${file}|${opts.full ? "full" : "std"}`;
+  const running = inflight.get(key);
+  if (running) return running;
+  const p = loadSaveUncached(file, opts).finally(() => inflight.delete(key));
+  inflight.set(key, p);
+  return p;
+}
+
+async function loadSaveUncached(file: string, opts: { full?: boolean }): Promise<LoadedSave> {
   const st = fs.statSync(file);
   const key = `${file}|${st.size}|${st.mtimeMs}|${opts.full ? "full" : "std"}`;
   const hit = cache.get(key);

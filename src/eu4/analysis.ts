@@ -1,7 +1,7 @@
 /** EU4 game-state analysis: turns raw save data into insight-ready summaries. */
 import { all, isObject, list, num, one, str, yes, type PObject, type PValue } from "../core/clausewitz.js";
 import { countries, livingCountries, provinces, type LoadedSave } from "./save.js";
-import { countryName, provinceName, unitCategory } from "./names.js";
+import { countryName, provinceName, unitCategory, unitCategoriesFromGameFiles } from "./names.js";
 
 export const r = (n: number, d = 2) => Math.round(n * 10 ** d) / 10 ** d;
 
@@ -331,6 +331,7 @@ export function militaryReport(save: LoadedSave, tag: string) {
     leaders,
     totals: m.armySummary,
     composition: ratio,
+    compositionSource: unitCategoriesFromGameFiles() ? "game files" : "estimated from unit names (install path not found)",
     navy: m.navySummary,
     armies: m.armies,
     navies: m.navies,
@@ -654,8 +655,9 @@ export function findProblems(save: LoadedSave, tag: string): { tag: string; name
   if (num(c["stability"]) < 0) add("critical", "stability", `Stability is ${num(c["stability"])} — unrest and penalties everywhere.`, "Spend ADM to raise stability as soon as possible (costs rise with low stability modifiers).");
   else if (num(c["stability"]) < 1) add("warning", "stability", `Stability is ${num(c["stability"])}.`, "Raise stability to at least +1 before declaring wars or changing religion/culture.");
   const leg = legitimacyLike(c);
-  if (leg.legitimacy !== undefined && leg.legitimacy < 50) add("warning", "government", `Legitimacy is ${leg.legitimacy}.`, "Low legitimacy reduces tax, increases unrest and rebel risk; avoid regency, marry well, consider a heir with good claim.");
-  if (leg.republican_tradition !== undefined && leg.republican_tradition < 30) add("warning", "government", `Republican tradition is ${leg.republican_tradition}.`, "Avoid re-electing the same ruler, and look for events/reforms that raise tradition.");
+  const govType = (ov.government.type ?? "").toLowerCase();
+  if (leg.legitimacy !== undefined && leg.legitimacy < 50 && (govType === "" || govType.includes("monarchy"))) add("warning", "government", `Legitimacy is ${leg.legitimacy}.`, "Low legitimacy reduces tax, increases unrest and rebel risk; avoid regency, marry well, consider a heir with good claim.");
+  if (leg.republican_tradition !== undefined && leg.republican_tradition < 30 && govType.includes("republic")) add("warning", "government", `Republican tradition is ${leg.republican_tradition}.`, "Avoid re-electing the same ruler, and look for events/reforms that raise tradition.");
   if (num(c["war_exhaustion"]) >= 5) add(num(c["war_exhaustion"]) >= 10 ? "critical" : "warning", "military", `War exhaustion is ${r(num(c["war_exhaustion"]))}.`, "Make peace if the war is stalled, or spend DIP to reduce war exhaustion. It adds unrest and reduces manpower recovery.");
   const oe = num(c["overextension_percentage"]) * 100;
   if (oe >= 50) add(oe >= 100 ? "critical" : "warning", "expansion", `Overextension is ${r(oe, 0)}% (${prov.uncored.length} uncored province(s)).`, "Stop conquering until you core the provinces listed in province_report; overextension causes unrest, corruption and AE disasters.");
@@ -693,7 +695,7 @@ export function findProblems(save: LoadedSave, tag: string): { tag: string; name
 
   // provinces
   if (prov.wrongReligionCount > 0) add("info", "religion", `${prov.wrongReligionCount} province(s) do not follow ${str(c["religion"])}.`, "Send missionaries to high-development heretic/heathen provinces to cut unrest and raise tax.");
-  if (prov.wrongCultureCount > Math.max(3, prov.count * 0.3)) add("info", "culture", `${prov.wrongCultureCount}/${prov.count} provinces are non-accepted culture.`, "Promote large cultures (when you have slots) or convert culture in key provinces with DIP.");
+  if (prov.wrongCultureCount > Math.max(3, prov.count * 0.3)) add("info", "culture", `${prov.wrongCultureCount}/${prov.count} provinces are non-accepted culture (brother cultures of the same group are penalised less).`, "Promote large cultures (when you have slots) or convert culture in key provinces with DIP.");
   const devast = prov.provinces.filter((p) => p.devastation >= 10);
   if (devast.length) add("warning", "provinces", `${devast.length} province(s) are devastated (≥10): ${devast.slice(0, 5).map((p) => p.name).join(", ")}.`, "Devastation reduces income and manpower; avoid fighting there and use reduce-devastation actions if available.");
   if (prov.occupied.length) add("warning", "war", `${prov.occupied.length} of your provinces are occupied by enemies.`, "Retake them — occupation lowers war score and income.");

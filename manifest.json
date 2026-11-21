@@ -3,22 +3,37 @@
   "manifest_version": "0.3",
   "name": "eu4-save-mcp",
   "display_name": "EU4 Save Advisor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Chat with your Europa Universalis IV campaign: Claude reads your save files and gives strategic insights.",
   "long_description": "Reads EU4 save files (plaintext, compressed and — with the free rakaly CLI — ironman) on Windows, macOS and Linux, and exposes your campaign to Claude: country overview, economy breakdown, military, diplomacy, wars, provinces, world rankings, history trends, save-to-save progress and an automatic health check with concrete advice. Read-only: it never modifies your saves.",
-  "author": { "name": "Adnan Kutay Yüksel", "url": "https://github.com/adnan-kutay-yuksel" },
-  "repository": { "type": "git", "url": "https://github.com/adnan-kutay-yuksel/eu4-save-mcp" },
+  "author": {
+    "name": "Adnan Kutay Yüksel",
+    "url": "https://github.com/adnan-kutay-yuksel"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adnan-kutay-yuksel/eu4-save-mcp"
+  },
   "homepage": "https://github.com/adnan-kutay-yuksel/eu4-save-mcp",
   "documentation": "https://github.com/adnan-kutay-yuksel/eu4-save-mcp#readme",
   "support": "https://github.com/adnan-kutay-yuksel/eu4-save-mcp/issues",
   "license": "MIT",
-  "keywords": ["eu4", "europa universalis", "paradox", "strategy", "save", "game"],
+  "keywords": [
+    "eu4",
+    "europa universalis",
+    "paradox",
+    "strategy",
+    "save",
+    "game"
+  ],
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/dist/index.js"],
+      "args": [
+        "${__dirname}/dist/index.js"
+      ],
       "env": {
         "EU4_SAVE_DIR": "${user_config.save_dir}",
         "RAKALY_PATH": "${user_config.rakaly_path}"
@@ -40,29 +55,93 @@
     }
   },
   "tools": [
-    { "name": "eu4_environment", "description": "Detect OS, save folders, game version and rakaly." },
-    { "name": "eu4_list_saves", "description": "List save files with date, country and version." },
-    { "name": "eu4_load_save", "description": "Load a save and summarise the campaign." },
-    { "name": "eu4_country_overview", "description": "Headline state of a country." },
-    { "name": "eu4_economy", "description": "Income/expense breakdown, loans, inflation." },
-    { "name": "eu4_military", "description": "Armies, navies, manpower and enemy comparison." },
-    { "name": "eu4_diplomacy", "description": "Allies, subjects, rivals, opinions." },
-    { "name": "eu4_wars", "description": "Active wars, participants and battles." },
-    { "name": "eu4_provinces", "description": "Owned provinces, cores, culture/religion, buildings." },
-    { "name": "eu4_find_problems", "description": "Health check with prioritised advice." },
-    { "name": "eu4_rankings", "description": "World rankings by metric." },
-    { "name": "eu4_compare_countries", "description": "Side-by-side country comparison." },
-    { "name": "eu4_trends", "description": "Yearly income/size/score history." },
-    { "name": "eu4_compare_saves", "description": "Progress between two saves." },
-    { "name": "eu4_query", "description": "Raw field lookup by path." },
-    { "name": "eu4_search", "description": "Search keys/values in the save." },
-    { "name": "eu4_explain", "description": "Explain a game mechanic." }
+    {
+      "name": "eu4_environment",
+      "description": "Detect OS, save folders, game version and rakaly."
+    },
+    {
+      "name": "eu4_list_saves",
+      "description": "List save files with date, country and version."
+    },
+    {
+      "name": "eu4_load_save",
+      "description": "Load a save and summarise the campaign."
+    },
+    {
+      "name": "eu4_country_overview",
+      "description": "Headline state of a country."
+    },
+    {
+      "name": "eu4_economy",
+      "description": "Income/expense breakdown, loans, inflation."
+    },
+    {
+      "name": "eu4_military",
+      "description": "Armies, navies, manpower and enemy comparison."
+    },
+    {
+      "name": "eu4_diplomacy",
+      "description": "Allies, subjects, rivals, opinions."
+    },
+    {
+      "name": "eu4_wars",
+      "description": "Active wars, participants and battles."
+    },
+    {
+      "name": "eu4_provinces",
+      "description": "Owned provinces, cores, culture/religion, buildings."
+    },
+    {
+      "name": "eu4_find_problems",
+      "description": "Health check with prioritised advice."
+    },
+    {
+      "name": "eu4_rankings",
+      "description": "World rankings by metric."
+    },
+    {
+      "name": "eu4_compare_countries",
+      "description": "Side-by-side country comparison."
+    },
+    {
+      "name": "eu4_trends",
+      "description": "Yearly income/size/score history."
+    },
+    {
+      "name": "eu4_compare_saves",
+      "description": "Progress between two saves."
+    },
+    {
+      "name": "eu4_query",
+      "description": "Raw field lookup by path."
+    },
+    {
+      "name": "eu4_search",
+      "description": "Search keys/values in the save."
+    },
+    {
+      "name": "eu4_explain",
+      "description": "Explain a game mechanic."
+    }
   ],
   "prompts": [
-    { "name": "campaign_review", "description": "Full strategic review of the latest save.", "arguments": ["focus"], "text": "Load my latest EU4 save with eu4_load_save, run eu4_find_problems, then review economy, military and diplomacy. Focus: ${arguments.focus}" }
+    {
+      "name": "campaign_review",
+      "description": "Full strategic review of the latest save.",
+      "arguments": [
+        "focus"
+      ],
+      "text": "Load my latest EU4 save with eu4_load_save, run eu4_find_problems, then review economy, military and diplomacy. Focus: ${arguments.focus}"
+    }
   ],
   "compatibility": {
-    "platforms": ["darwin", "win32", "linux"],
-    "runtimes": { "node": ">=18.0.0" }
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
   }
 }
