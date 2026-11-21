@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "typecheck": "tsc",
-    "test": "node --import tsx --test test/*.test.ts",
+    "test": "node --import tsx --test test/parser.test.ts test/eu4.test.ts test/mcp.test.ts",
     "pack": "npm run build && mcpb pack . eu4-save-mcp.mcpb"
   },
   "keywords": [
