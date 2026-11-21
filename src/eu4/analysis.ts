@@ -435,9 +435,33 @@ export function activeWars(save: LoadedSave) {
   return all(save.game, "active_war").filter(isObject).map((w) => warSummary(save, w));
 }
 
+/** Current sides from add_/rem_ attacker/defender events (fallback when no attackers/defenders block). */
+function sidesFromHistory(w: PObject): { attackers: string[]; defenders: string[] } {
+  const att = new Set<string>(), def = new Set<string>();
+  const hist = w["history"];
+  if (isObject(hist)) {
+    const dated = Object.entries(hist).filter(([k]) => /^\d+\.\d+\.\d+$/.test(k)).sort(([a], [b]) => {
+      const pa = a.split(".").map(Number), pb = b.split(".").map(Number);
+      return pa[0] - pb[0] || pa[1] - pb[1] || pa[2] - pb[2];
+    });
+    for (const [, ev] of dated) {
+      for (const e of Array.isArray(ev) ? ev : [ev]) {
+        all(e, "add_attacker").forEach((t) => att.add(String(t)));
+        all(e, "add_defender").forEach((t) => def.add(String(t)));
+        all(e, "rem_attacker").forEach((t) => att.delete(String(t)));
+        all(e, "rem_defender").forEach((t) => def.delete(String(t)));
+      }
+    }
+  }
+  return { attackers: [...att], defenders: [...def] };
+}
+
 function warSummary(save: LoadedSave, w: PObject) {
-  const attackers = list(w["attackers"]).map(String);
-  const defenders = list(w["defenders"]).map(String);
+  const fromHist = sidesFromHistory(w);
+  let attackers = list(w["attackers"]).map(String);
+  let defenders = list(w["defenders"]).map(String);
+  if (!attackers.length) attackers = fromHist.attackers;
+  if (!defenders.length) defenders = fromHist.defenders;
   const participants = all(w, "participants").filter(isObject).map((p) => {
     const losses = isObject(p["losses"]) ? list(one(p["losses"], "members")).map((x) => num(x)) : [];
     return { tag: str(p["tag"]) ?? "", contribution: r(num(p["value"])), losses: losses.reduce((s, x) => s + x, 0) };
