@@ -1,0 +1,46 @@
+{
+  "name": "eu4-save-mcp",
+  "version": "1.0.0",
+  "description": "MCP server that lets Claude read your Europa Universalis IV save files and give strategic insights (Windows, macOS, Linux; ironman via rakaly).",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc",
+    "test": "node --import tsx --test test/*.test.ts",
+    "pack": "npm run build && mcpb pack . eu4-save-mcp.mcpb"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "eu4",
+    "europa-universalis",
+    "paradox",
+    "save-analyzer"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "fzstd": "^0.1.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "zod": "^4.6.7"
+  },
+  "bin": {
+    "eu4-save-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "manifest.json"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
